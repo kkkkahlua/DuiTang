@@ -3,8 +3,11 @@ import re
 import urllib.parse
 from shell import Shell
 from strproc import StrProc
+from bloomfilter import BloomFilter
 
 class Spider():
+	num = 0
+
 	def __init__(self):
 		pass
 
@@ -15,7 +18,29 @@ class Spider():
 
 		for result in results:
 			url,name = result
+
+			if (bloomfilter.find(url)): return
+			bloomfilter.insert(url)
+
+			self.num = self.num + 1
+			print('ok %d' % self.num)			
+
+			if (self.num % 5 == 0):
+				bloomfilter.save()
+				bloomfilter.load()
+
 			shell.save(strproc.del_spec(name),url)
+
+
+
+	def album_proc(self, result):
+		id,album = result
+		album = strproc.del_spec(album)
+		print(id,album)
+		shell.mkdir('album\\'+album)
+		shell.cd('album\\'+album)
+		self.dfs_album('https://www.duitang.com/napi/blog/list/by_album/?album_id='+id+'&limit=24&include_fields=top_comments%2Cis_root%2Csource_link%2Cbuyable%2Croot_id%2Cstatus%2Clike_count%2Csender%2Creply_count&start=24')
+		shell.cd('')
 
 	def dfs_all(self, src, type):
 		#print(src)
@@ -26,15 +51,9 @@ class Spider():
 			content = requests.get(src).text
 			pat_alb = re.compile('"album":{"id":(.*?),"name":"(.*?)"')
 			results = re.findall(pat_alb, content)
-			for result in results:
 
-				id,album = result
-				album = strproc.del_spec(album)
-				print(id,album)
-				shell.mkdir('album\\'+album)
-				shell.cd('album\\'+album)
-				self.dfs_album('https://www.duitang.com/napi/blog/list/by_album/?album_id='+id+'&limit=24&include_fields=top_comments%2Cis_root%2Csource_link%2Cbuyable%2Croot_id%2Cstatus%2Clike_count%2Csender%2Creply_count&start=24')
-				shell.cd('') 
+			for result in results:
+				self.album_proc(result)
 			
 			self.save_picture(src)
 
@@ -81,13 +100,7 @@ class Spider():
 		results2 = results2_1 + results2_2
 		
 		for result in results2:
-			id,album = result
-			album = strproc.del_spec(album)
-			print(id,album)
-			shell.mkdir('album\\'+album)
-			shell.cd('album\\'+album)
-			self.dfs_album('https://www.duitang.com/napi/blog/list/by_album/?album_id='+id+'&limit=24&include_fields=top_comments%2Cis_root%2Csource_link%2Cbuyable%2Croot_id%2Cstatus%2Clike_count%2Csender%2Creply_count&start=24')
-			shell.cd('')
+			self.album_proc(result)
 		
 		print('')
 		'''
@@ -111,4 +124,6 @@ class Spider():
 spider = Spider()
 shell = Shell()
 strproc = StrProc()
+bloomfilter = BloomFilter()
 spider.work("https://www.duitang.com")
+bloomfilter.save()
