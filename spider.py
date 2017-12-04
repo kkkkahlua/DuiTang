@@ -7,17 +7,31 @@ class Spider():
 	def __init__(self):
 		pass
 
-	def dfs_album(self, src):
-		#print(url)
-		cont_alb = requests.get(src).text
-		patt_alb = re.compile('"photo".*?"path":"(.*?)"},"msg":"(.*?)"', re.S)
-		res_alb = re.findall(patt_alb, cont_alb)
+	def save_picture(self, src):
+		content = requests.get(src).text
+		pattern = re.compile('"photo".*?"path":"(.*?)"},"msg":"(.*?)"', re.S)
+		results = re.findall(pattern, content)
 
-		for result in res_alb:
+		for result in results:
 			url,name = result
-			#print(url, name)
 			shell.save(strproc.del_spec(name),url)
-		
+
+	def dfs_all(self, src):
+		print(src)
+		self.save_picture(src)
+
+		content = requests.get(src).text
+		pat_num = re.compile('}],"more":(.*?),"limit"')
+		num = int(re.search(pat_num, content).group(1))
+		print(num)
+		if (num != 0): self.dfs_all(strproc.next(src))
+
+
+	#	func:	save all pictures in the designated album
+	#	notice: albums do not contain urls that point to other websites,
+	#			as a result, dfs will end here
+	def dfs_album(self, src):
+		self.dfs_all(src)
 
 	def work(self, src):
 		content = requests.get(src).text

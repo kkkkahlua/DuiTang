@@ -12,3 +12,12 @@ class StrProc():
 			x = max(title.find('/'), title.find('\\'))
 		#print(title)
 		return title[0:20]
+
+	def next(self, s):
+		pat = 'start'
+		p = s.find(pat)
+		x = int(s[p+6:len(s)])
+		x += 24
+		temp = s[0:p+6] + str(x)
+		#print(temp)
+		return temp
