@@ -33,7 +33,7 @@ class StrProc():
 					flag = True
 				break
 
-		if (flag == True):
+		if (flag == True and i != len(s) - 1):
 			x = int(s[i+1:len(s)])
 			x = x + 1
 			ret = s[0:i+1] + str(x)

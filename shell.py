@@ -33,7 +33,7 @@ class Shell:
 
 		print(fname)
 		img = requests.get(path)
-		f = open(fname[0:20] + '.' + suffix, 'ab')
+		f = open(fname + '.' + suffix, 'ab')
 		f.write(img.content)
 		f.close()
 
