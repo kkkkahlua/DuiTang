@@ -1,15 +1,22 @@
 import requests
 import re
 from shell import Shell
+from strproc import StrProc
 
 class Spider():
 	def __init__(self):
 		pass
 
-	def dfs_album(self, url):
+	def dfs_album(self, src):
 		#print(url)
-		content = requests.get(url).text
-		pattern = re.compile('"photo".*?"path":"(.*?)"')
+		cont_alb = requests.get(src).text
+		patt_alb = re.compile('"photo".*?"path":"(.*?)"},"msg":"(.*?)"', re.S)
+		res_alb = re.findall(patt_alb, cont_alb)
+
+		for result in res_alb:
+			url,name = result
+			#print(url, name)
+			shell.save(strproc.del_spec(name),url)
 		
 
 	def work(self, src):
@@ -58,4 +65,5 @@ class Spider():
 
 spider = Spider()
 shell = Shell()
+strproc = StrProc()
 spider.work("https://www.duitang.com")
