@@ -19,13 +19,13 @@ class Spider():
 		for result in results:
 			url,name = result
 
-			if (bloomfilter.find(url)): return
-			bloomfilter.insert(url)
+			if (bloomfilter.find(url, 0)): return
+			bloomfilter.insert(url, 0)
 
 			self.num = self.num + 1
 			print('ok %d' % self.num)			
 
-			if (self.num % 5 == 0):
+			if (self.num % 50 == 0):
 				bloomfilter.save()
 				bloomfilter.load()
 
@@ -36,6 +36,10 @@ class Spider():
 	def album_proc(self, result):
 		id,album = result
 		album = strproc.del_spec(album)
+
+		if (bloomfilter.find(album, 1)): return
+		bloomfilter.insert(album, 1)
+
 		print(id,album)
 		shell.mkdir('album\\'+album)
 		shell.cd('album\\'+album)
@@ -47,14 +51,14 @@ class Spider():
 		if (type == 1):
 			self.save_picture(src)
 		elif (type == 2):
-			
+			'''
 			content = requests.get(src).text
 			pat_alb = re.compile('"album":{"id":(.*?),"name":"(.*?)"')
 			results = re.findall(pat_alb, content)
 
 			for result in results:
 				self.album_proc(result)
-			
+			'''
 			self.save_picture(src)
 
 		content = requests.get(src).text
@@ -63,7 +67,7 @@ class Spider():
 		if (s_num is None): return
 		num = int(s_num.group(1))
 		#print(num)
-		if (num != 0): self.dfs_all(strproc.next(src), type)
+		if (num != 0): self.dfs_all(strproc.next_url(src), type)
 
 
 	#	func:	save all pictures in the designated album
