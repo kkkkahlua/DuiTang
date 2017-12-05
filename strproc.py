@@ -47,3 +47,9 @@ class StrProc():
 			if (s[i] == '.'): break
 			else: i = i - 1
 		return s[i+1:len(s)]
+
+	def url_change(self, s):
+		suf = self.suffix(s)
+		pat = '.thumb'
+		p = s.find(pat)
+		return s[0:p] + '.' + suf

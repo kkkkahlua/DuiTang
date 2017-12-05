@@ -8,6 +8,9 @@ class BloomFilter():
 	#	if visited, not check again in this run
 	l_alb = list(range(786433))
 
+	item = 0
+	elapse = 0
+
 	def load(self):
 		if (os.path.exists("F:\py\\Spider\\rec.txt")):
 			self.l_url = []
@@ -19,6 +22,15 @@ class BloomFilter():
 		else:
 			for x in self.l_url:
 				self.l_url[x] = 0
+
+		if (os.path.exists('F:\py\\Spider\\runtime.txt')):
+			fin = open('F:\py\\Spider\\runtime.txt', 'r')
+			self.item = int(fin.readline())
+			self.elapse = float(fin.readline())
+		else:
+			self.item = self.elapse = 0
+		print(self.item)
+		print(self.elapse)
 
 	def __init__(self):
 		for x in self.l_alb:
@@ -77,9 +89,14 @@ class BloomFilter():
 		else:
 			return self.l_alb[self.RSHash(s,type)] and self.l_alb[self.JSHash(s,type)] and self.l_alb[self.BKDRHash(s,type)] and self.l_alb[self.SDBMHash(s,type)] and self.l_alb[self.DJBHash(s,type)]
 
-	def save(self):
+	def save(self, num, time):
 		fout = open('F:\py\\Spider\\rec.txt', 'w')
 		for c in self.l_url: 
 			if (c != 0 | c != 1):
 				print(c,str(c))
 			fout.write(str(c))
+
+		fout = open('F:\py\\Spider\\runtime.txt', 'w')
+		print(self.item+num)
+		print(self.elapse+time)
+		fout.write(str(self.item+num)+'\n'+str(self.elapse+time))
