@@ -7,15 +7,20 @@ from bloomfilter import BloomFilter
 
 class Spider():
 	num = 0
+	save_t = 50
+	break_t = 5000
 
 	def __init__(self):
 		pass
 
 	def save_picture(self, src, type, name):
-		if (type == 1):
+		if (type == 0):
+			shell.mkdir('category\\'+name)
+			shell.cd('category\\'+name)
+		elif (type == 1):
 			shell.mkdir('album\\'+name)
 			shell.cd('album\\'+name)
-		else:
+		elif (type == 2):
 			shell.mkdir('search\\'+name)
 			shell.cd('search\\'+name)
 
@@ -26,34 +31,37 @@ class Spider():
 		for result in results:
 			url,name = result
 
-			if (bloomfilter.find(url, 0)): return
+			if (bloomfilter.find(url, 0)): 
+				print(strproc.del_spec(name))
+				print('Already visited!')
+				print('')
+				return
 			bloomfilter.insert(url, 0)
 
-			self.num = self.num + 1
-			print('ok %d' % self.num)			
-
-			if (self.num % 50 == 0):
-				bloomfilter.save()
-				bloomfilter.load()
-
 			shell.save(strproc.del_spec(name),url)
+
+			self.num = self.num + 1
+			print('ok! %d' % self.num)		
+			print('')
+			
+			if (self.num % self.save_t == 0):
+				bloomfilter.save()
+				#bloomfilter.load()
+
+			if (self.num == self.break_t):
+				exit(0)
 
 
 	def dfs_all(self, src, type, name):
 		#print(src)
-		if (type == 1):
-			self.save_picture(src, type, name)
-		elif (type == 2):
-			
+		self.save_picture(src, type, name)
+		if (type != 1):		
 			content = requests.get(src).text
 			pat_alb = re.compile('"album":{"id":(.*?),"name":"(.*?)"')
 			results = re.findall(pat_alb, content)
 
 			for result in results:
-				print(result)
 				self.album_proc(result)
-
-			self.save_picture(src, type, name)
 
 		content = requests.get(src).text
 		pat_num = re.compile('}],"more":(.*?),"limit"')
@@ -63,12 +71,18 @@ class Spider():
 		#print(num)
 		if (num != 0): self.dfs_all(strproc.next_url(src), type, name)
 
+	def dfs_category(self, src, cname):
+		self.dfs_all('https://www.duitang.com/napi/blog/list/by_filter_id/?include_fields=top_comments%2Cis_root%2Csource_link%2Citem%2Cbuyable%2Croot_id%2Cstatus%2Clike_count%2Csender%2Calbum&filter_id='+urllib.parse.quote(cname)+'&start=24', 0, cname+'\\main')
 
-	#	func:	save all pictures in the designated album
-	#	notice: albums do not contain urls that point to other websites,
-	#			as a result, dfs will end here
+		content = requests.get('https://www.duitang.com/category'+src).text
+		pattern = re.compile('a href="/category'+src+'&(.*?)">(.*?)</a>')
+		results = re.findall(pattern, content)
+
+		for result in results:
+			sub,sname = result
+			self.dfs_all('https://www.duitang.com/napi/blog/list/by_filter_id/?include_fields=top_comments%2Cis_root%2Csource_link%2Citem%2Cbuyable%2Croot_id%2Cstatus%2Clike_count%2Csender%2Calbum&filter_id='+urllib.parse.quote(cname)+'_'+urllib.parse.quote(sname)+'&start=24', 0, cname+'\\'+sname)
+
 	def dfs_album(self, src, name):
-		print(src)
 		self.dfs_all(src, 1, name)
 
 	def dfs_search(self, src, name):
@@ -95,6 +109,7 @@ class Spider():
 			url,category = result
 			category = re.sub('\s', '', category)
 			print(url, category)
+			self.dfs_category(url, category)
 
 		print('')
 
