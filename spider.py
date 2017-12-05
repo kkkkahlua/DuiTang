@@ -9,8 +9,8 @@ from bloomfilter import BloomFilter
 class Spider():
 	num = 0
 	visit = 0
-	save_t = 2
-	break_t = 4
+	save_t = 50
+	break_t = 1000
 
 	def __init__(self):
 		self.num = self.visit = 0
