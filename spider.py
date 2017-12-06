@@ -9,8 +9,8 @@ from bloomfilter import BloomFilter
 class Spider():
 	num = 0
 	visit = 0
-	save_t = 50
-	break_t = 1000
+	save_t = 100
+	break_t = 10000
 
 	def __init__(self):
 		self.num = self.visit = 0
@@ -91,7 +91,7 @@ class Spider():
 
 			for result in results:
 				self.album_proc(result, type, name)
-
+		
 		content = requests.get(src).text
 		pat_num = re.compile('}],"more":(.*?),"limit"')
 		s_num = re.search(pat_num, content)
@@ -99,7 +99,7 @@ class Spider():
 		num = int(s_num.group(1))
 		#print(num)
 		if (num != 0): self.dfs_all(strproc.next_url(src), type, name)
-
+		
 
 	def dfs_category(self, src, cname):
 		self.dfs_page('https://www.duitang.com/category'+src, 0, cname)
@@ -174,7 +174,7 @@ class Spider():
 		
 		print('')
 		
-
+		
 		#	search
 		pattern3 = re.compile('<a target=".*?href=".*?search(.*?)">(.*?)</a>', re.S)
 		results3 = re.findall(pattern3, content)
@@ -197,3 +197,6 @@ bloomfilter = BloomFilter()
 
 spider.work("https://www.duitang.com")
 
+print('get: ', spider.num)
+print('time: ', time_t - time_s)
+print('duplicate: ', spider.visit)			
